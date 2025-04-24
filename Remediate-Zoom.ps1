@@ -7,7 +7,7 @@ function Write-Log {
     param([string]$message)
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     "$timestamp - $message" | Out-File -FilePath $logFile -Append
-    Write-Host "$timestamp - $message"
+    Write-Output "$timestamp - $message"
 }
 
 Write-Log "Starting Zoom Removal and Reinstallation"
