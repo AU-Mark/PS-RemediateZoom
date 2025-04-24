@@ -46,7 +46,7 @@ try {
     
     # Run CleanZoom to uninstall Zoom
     Write-Log "Running CleanZoom with /silent parameter to uninstall Zoom"
-    Start-Process -FilePath $cleanZoomExePath -ArgumentList "/silent" -Wait
+    Start-Process -FilePath $cleanZoomExePath -ArgumentList "/silent /keep_outlook_plugin /keep_notes_plugin" -Wait
     Write-Log "CleanZoom uninstallation process completed"
     
     # Brief pause to ensure uninstallation completes
@@ -62,7 +62,7 @@ try {
     
     # Install Zoom silently
     Write-Log "Installing Zoom silently"
-    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$zoomInstallerPath`" /qn" -Wait
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$zoomInstallerPath`" /quiet /qn /norestart MSIRestartManagerControl=Disable /log zoominstall.log" -Wait
     Write-Log "Zoom installation completed"
     
     Write-Log "Zoom reinstallation process completed successfully"
