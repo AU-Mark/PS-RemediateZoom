@@ -1,14 +1,31 @@
 # PowerShell script to uninstall Zoom using CleanZoom and reinstall latest version
 
-# Set up logging
-$logFile = "$env:TEMP\Reinstall-Zoom.txt"
+Function Uninstall-Zoom {
+    param(
+        [string] $cleanZoomExePath
+    )
 
-function Write-Log {
+    If (Get-Process -Name "Zoom") {
+        Write-Log "Zoom is currently running. Sleeping for 60 seconds and then trying again."
+        Start-Sleep 60
+        Uninstall-Zoom $cleanZoomExePath
+    } Else {
+        # Run CleanZoom to uninstall Zoom
+        Write-Log "Running CleanZoom with /silent parameter to uninstall Zoom"
+        Start-Process -FilePath $cleanZoomExePath -ArgumentList "/silent /keep_outlook_plugin /keep_notes_plugin" -Wait
+        Write-Log "CleanZoom uninstallation process completed"
+    }
+}
+
+Function Write-Log {
     param([string]$message)
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     "$timestamp - $message" | Out-File -FilePath $logFile -Append
     Write-Output "$timestamp - $message"
 }
+
+# Set up logging
+$logFile = "$env:TEMP\Reinstall-Zoom.txt"
 
 Write-Log "Starting Zoom Removal and Reinstallation"
 
@@ -44,10 +61,7 @@ try {
     $cleanZoomExePath = $cleanZoomExe.FullName
     Write-Log "Found CleanZoom executable at: $cleanZoomExePath"
     
-    # Run CleanZoom to uninstall Zoom
-    Write-Log "Running CleanZoom with /silent parameter to uninstall Zoom"
-    Start-Process -FilePath $cleanZoomExePath -ArgumentList "/silent /keep_outlook_plugin /keep_notes_plugin" -Wait
-    Write-Log "CleanZoom uninstallation process completed"
+    Uninstall-Zoom $cleanZoomExePath
     
     # Brief pause to ensure uninstallation completes
     Start-Sleep -Seconds 5
@@ -55,14 +69,14 @@ try {
     # Download latest Zoom installer
     $zoomInstallerUrl = "https://zoom.us/client/latest/ZoomInstallerFull.msi"
     $zoomInstallerPath = Join-Path $tempDir "ZoomInstallerFull.msi"
-    Write-Log "Downloading latest Zoom installer from $zoomInstallerUrl"
+    Write-Log "Downloading latest Zoom MSI installer from $zoomInstallerUrl"
     
     $webClient.DownloadFile($zoomInstallerUrl, $zoomInstallerPath)
-    Write-Log "Downloaded Zoom installer to $zoomInstallerPath"
+    Write-Log "Downloaded Zoom MSI installer to $zoomInstallerPath"
     
     # Install Zoom silently
-    Write-Log "Installing Zoom silently"
-    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$zoomInstallerPath`" /quiet /qn /norestart MSIRestartManagerControl=Disable /log zoominstall.log" -Wait
+    Write-Log "Installing Zoom MSI silently"
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$zoomInstallerPath`" /quiet /qn /norestart AU2_EnableAutoUpdate MSIRestartManagerControl=Disable /log zoominstall.log" -Wait
     Write-Log "Zoom installation completed"
     
     Write-Log "Zoom reinstallation process completed successfully"
